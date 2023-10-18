@@ -187,7 +187,7 @@ class SoftActorCritic(nn.Module):
             # TODO(student)
             # Sample from the actor
             next_action_distribution: torch.distributions.Distribution = self.actor(next_obs)
-            next_action = next_action_distribution.sample(next_obs)
+            next_action = next_action_distribution.sample()
 
             # Compute the next Q-values for the sampled actions
             next_qs = self.target_critic(next_obs, next_action)
@@ -205,11 +205,11 @@ class SoftActorCritic(nn.Module):
                 self.num_critic_networks,
                 batch_size,
             ), next_qs.shape
-
+            
             if self.use_entropy_bonus and self.backup_entropy:
                 # TODO(student): Add entropy bonus to the target values for SAC
                 next_action_entropy = ...
-                next_qs += ...
+                next_qs += 0 # CHANGE THIS LINE FOR ENTROPY
 
         # TODO(student): Update the critic
         # Predict Q-values
@@ -340,7 +340,8 @@ class SoftActorCritic(nn.Module):
         for i in range(self.num_critic_updates):
             critic_infos.append(self.update_critic(observations, actions, rewards, next_observations, dones))
         # TODO(student): Update the actor
-        actor_info = self.update_actor(observations)
+        # actor_info = self.update_actor(observations) # CHANGE THIS 
+        actor_info = {}
 
         # TODO(student): Perform either hard or soft target updates.
         # Relevant variables:

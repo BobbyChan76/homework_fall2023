@@ -48,12 +48,7 @@ class DQNAgent(nn.Module):
         observation = ptu.from_numpy(np.asarray(observation))[None]
 
         # TODO(student): get the action from the critic using an epsilon-greedy strategy
-        # yes = torch.distributions.bernoulli.Bernoulli(torch.Tensor([1 - epsilon])).probs.item()
         greedy_action = torch.argmax(self.critic(observation))
-        # if not yes:
-        #     choices = np.array([i for i in range(self.num_actions) if i != greedy_action.item()])
-        #     choice = ptu.from_numpy(np.random.choice(choices, size=(1, 1)))
-        #     greedy_action = choice
         probs = (epsilon / (self.num_actions - 1)) * torch.ones(self.num_actions)
         probs[greedy_action] = 1 - epsilon
         action_dist = torch.distributions.categorical.Categorical(probs)
@@ -78,7 +73,7 @@ class DQNAgent(nn.Module):
             next_qa_values = self.target_critic(next_obs)
 
             if self.use_double_q:
-                critic_q_values = self.critic(obs)
+                critic_q_values = self.critic(next_obs)
                 next_action = torch.argmax(critic_q_values, dim=1)
             else:
                 next_action = torch.argmax(next_qa_values, dim=1)
