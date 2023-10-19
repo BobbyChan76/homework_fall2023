@@ -242,11 +242,11 @@ class SoftActorCritic(nn.Module):
         batch_size = obs.shape[0]
 
         # TODO(student): Generate an action distribution
-        action_distribution: torch.distributions.Distribution = ...
+        action_distribution: torch.distributions.Distribution = self.actor(obs)
 
         with torch.no_grad():
             # TODO(student): draw num_actor_samples samples from the action distribution for each batch element
-            action = ...
+            action = action_distribution.sample_n(self.num_actor_samples)
             assert action.shape == (
                 self.num_actor_samples,
                 batch_size,
@@ -254,12 +254,12 @@ class SoftActorCritic(nn.Module):
             ), action.shape
 
             # TODO(student): Compute Q-values for the current state-action pair
-            q_values = ...
+            q_values = torch.cat([self.critic(obs, ac)[:, None, :] for ac in action], dim=1)
             assert q_values.shape == (
                 self.num_critic_networks,
                 self.num_actor_samples,
                 batch_size,
-            ), q_values.shape
+            ), f'{q_values.shape} but want {(self.num_critic_networks, self.num_actor_samples, batch_size)}'
 
             # Our best guess of the Q-values is the mean of the ensemble
             q_values = torch.mean(q_values, axis=0)
@@ -267,8 +267,8 @@ class SoftActorCritic(nn.Module):
 
         # Do REINFORCE: calculate log-probs and use the Q-values
         # TODO(student)
-        log_probs = ...
-        loss = ...
+        log_probs = action_distribution.log_prob(action)
+        loss = (-1) * torch.mean(log_probs * q_values)
 
         return loss, torch.mean(self.entropy(action_distribution))
 
@@ -340,8 +340,8 @@ class SoftActorCritic(nn.Module):
         for i in range(self.num_critic_updates):
             critic_infos.append(self.update_critic(observations, actions, rewards, next_observations, dones))
         # TODO(student): Update the actor
-        # actor_info = self.update_actor(observations) # CHANGE THIS 
-        actor_info = {}
+        actor_info = self.update_actor(observations) # CHANGE THIS 
+        # actor_info = {}
 
         # TODO(student): Perform either hard or soft target updates.
         # Relevant variables:
