@@ -21,7 +21,7 @@ def sac_config(
     hidden_size: int = 128,
     num_layers: int = 3,
     actor_learning_rate: float = 3e-4,
-    critic_learning_rate: float = 3e-4,
+    critic_learning_rate: float = 3e-5, # CHANGED FROM 3e-4
     total_steps: int = 300000,
     random_steps: int = 5000,
     training_starts: int = 10000,

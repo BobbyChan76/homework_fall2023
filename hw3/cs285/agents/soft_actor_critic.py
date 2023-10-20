@@ -151,7 +151,7 @@ class SoftActorCritic(nn.Module):
         if self.target_critic_backup_type == "doubleq":
             next_qs = next_qs[[1, 0], :]
         elif self.target_critic_backup_type == "min":
-            raise NotImplementedError
+            next_qs = torch.min(next_qs, dim=0)
         else:
             # Default, we don't need to do anything.
             pass
@@ -225,7 +225,6 @@ class SoftActorCritic(nn.Module):
             "critic_loss": loss.item(),
             "q_values": q_values.mean().item(),
             "target_values": target_values.mean().item(),
-            "entropy": torch.mean(self.entropy(self.actor(obs))).item(), # REMOVE THIS
         }
 
     def entropy(self, action_distribution: torch.distributions.Distribution):
@@ -254,7 +253,7 @@ class SoftActorCritic(nn.Module):
             ), action.shape
 
             # TODO(student): Compute Q-values for the current state-action pair
-            q_values = torch.cat([self.critic(obs, ac)[:, None, :] for ac in action], dim=1)
+            q_values = torch.stack([self.critic(obs, ac)[:, :] for ac in action], dim=1)
             assert q_values.shape == (
                 self.num_critic_networks,
                 self.num_actor_samples,
@@ -280,13 +279,13 @@ class SoftActorCritic(nn.Module):
 
         # TODO(student): Sample actions
         # Note: Think about whether to use .rsample() or .sample() here...
-        action = ...
+        action = action_distribution.rsample()
 
         # TODO(student): Compute Q-values for the sampled state-action pair
-        q_values = ...
+        q_values = self.critic(obs, action)
 
         # TODO(student): Compute the actor loss
-        loss = ...
+        loss = (-1) * q_values
 
         return loss, torch.mean(self.entropy(action_distribution))
 
