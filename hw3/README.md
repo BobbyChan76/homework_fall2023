@@ -1,0 +1,1 @@
+I just run the commands in the hw3 pdf except for reinforce1 where I used a learning rate of 3e-5 for both critic and actor learning rate and I used seed=100.

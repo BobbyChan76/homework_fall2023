@@ -151,7 +151,7 @@ class SoftActorCritic(nn.Module):
         if self.target_critic_backup_type == "doubleq":
             next_qs = next_qs[[1, 0], :]
         elif self.target_critic_backup_type == "min":
-            next_qs = torch.min(next_qs, dim=0)
+            next_qs = torch.min(next_qs, dim=0)[0]
         else:
             # Default, we don't need to do anything.
             pass
@@ -253,7 +253,7 @@ class SoftActorCritic(nn.Module):
             ), action.shape
 
             # TODO(student): Compute Q-values for the current state-action pair
-            q_values = torch.stack([self.critic(obs, ac)[:, :] for ac in action], dim=1)
+            q_values = torch.stack([self.critic(obs, ac) for ac in action], dim=1)
             assert q_values.shape == (
                 self.num_critic_networks,
                 self.num_actor_samples,
@@ -285,7 +285,7 @@ class SoftActorCritic(nn.Module):
         q_values = self.critic(obs, action)
 
         # TODO(student): Compute the actor loss
-        loss = (-1) * q_values
+        loss = (-1) * torch.mean(q_values)
 
         return loss, torch.mean(self.entropy(action_distribution))
 
