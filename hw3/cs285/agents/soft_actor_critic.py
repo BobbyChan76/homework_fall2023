@@ -152,6 +152,8 @@ class SoftActorCritic(nn.Module):
             next_qs = next_qs[[1, 0], :]
         elif self.target_critic_backup_type == "min":
             next_qs = torch.min(next_qs, dim=0)[0]
+        elif self.target_critic_backup_type == "mean":
+            raise NotImplementedError
         else:
             # Default, we don't need to do anything.
             pass
@@ -208,6 +210,13 @@ class SoftActorCritic(nn.Module):
             
             # Compute the target Q-value
             target_values: torch.Tensor = reward + (1 - 1.0 * done) * self.discount * next_qs
+
+            # Compute the target Q-value
+            target_values: torch.Tensor = ...
+            assert target_values.shape == (
+                self.num_critic_networks,
+                batch_size
+            )
 
         # TODO(student): Update the critic
         # Predict Q-values
