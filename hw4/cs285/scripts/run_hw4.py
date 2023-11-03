@@ -44,6 +44,11 @@ def collect_mbpo_rollout(
         # HINT: get actions from `sac_agent` and `next_ob` predictions from `mb_agent`.
         # Average the ensemble predictions directly to get the next observation.
         # Get the reward using `env.get_reward`.
+        ac = sac_agent.get_action(ob)
+        assert ac.shape == (mb_agent.ac_dim, )
+        next_ob = np.mean([mb_agent.get_dynamics_predictions(i, ob, ac) for i in range(mb_agent.ensemble_size)], axis=0)
+        assert next_ob.shape == (mb_agent.ob_dim,)
+        rew = env.get_reward(next_ob, ac)[0]
 
         obs.append(ob)
         acs.append(ac)
@@ -52,7 +57,7 @@ def collect_mbpo_rollout(
         dones.append(False)
 
         ob = next_ob
-
+        
     return {
         "observation": np.array(obs),
         "action": np.array(acs),
@@ -212,11 +217,11 @@ def run_training_loop(
                 # train SAC
                 batch = sac_replay_buffer.sample(sac_config["batch_size"])
                 sac_agent.update(
-                    batch["observations"],
-                    batch["actions"],
-                    batch["rewards"],
-                    batch["next_observations"],
-                    batch["dones"],
+                    ptu.from_numpy(batch["observations"]),
+                    ptu.from_numpy(batch["actions"]),
+                    ptu.from_numpy(batch["rewards"]),
+                    ptu.from_numpy(batch["next_observations"]),
+                    ptu.from_numpy(batch["dones"]),
                     i,
                 )
 

@@ -211,8 +211,6 @@ class SoftActorCritic(nn.Module):
             # Compute the target Q-value
             target_values: torch.Tensor = reward + (1 - 1.0 * done) * self.discount * next_qs
 
-            # Compute the target Q-value
-            target_values: torch.Tensor = ...
             assert target_values.shape == (
                 self.num_critic_networks,
                 batch_size
