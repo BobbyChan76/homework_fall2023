@@ -38,7 +38,7 @@ class IQLAgent(AWACAgent):
         action_dist: Optional[torch.distributions.Categorical] = None,
     ):
         # TODO(student): Compute advantage with IQL
-        return ...
+        return self.critic(observations)[torch.arange(observations.shape[0]), actions] - self.value_critic(observations)
 
     def update_q(
         self,
@@ -52,6 +52,8 @@ class IQLAgent(AWACAgent):
         Update Q(s, a)
         """
         # TODO(student): Update Q(s, a) to match targets (based on V)
+        values =  self.value_critic(next_observations).no_grad()
+        q_values = self.critic(observations)
         loss = ...
 
         self.critic_optimizer.zero_grad()

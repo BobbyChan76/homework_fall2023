@@ -42,6 +42,7 @@ class CQLAgent(DQNAgent):
 
         # TODO(student): modify the loss to implement CQL
         # Hint: `variables` includes qa_values and q_values from your CQL implementation
-        loss = loss + ...
+        soft_max = torch.log(torch.sum(torch.exp(variables["qa_values"]), dim=1))
+        loss = loss + self.cql_alpha * torch.mean((soft_max - variables["q_values"]))
 
         return loss, metrics, variables
