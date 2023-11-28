@@ -47,7 +47,7 @@ class AWACAgent(DQNAgent):
         q_values = qa_values[torch.arange(observations.shape[0]), actions]
         assert q_values.shape == target_values.shape
 
-        loss = self.critic_loss(q_values, target_values)
+        loss = torch.mean((q_values - target_values) ** 2)
 
         return (
             loss,
@@ -91,7 +91,6 @@ class AWACAgent(DQNAgent):
         with torch.no_grad():
             advantage = self.compute_advantage(observations, actions, res)
         loss = (-1) * torch.mean(log_probs * torch.exp((1/self.temperature) * advantage))
-
         self.actor_optimizer.zero_grad()
         loss.backward()
         self.actor_optimizer.step()
